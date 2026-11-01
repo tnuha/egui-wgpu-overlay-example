@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 use std::{f32::consts::PI, iter};
 
 use cgmath::prelude::*;
@@ -19,6 +20,8 @@ mod resources;
 mod texture;
 
 use model::{DrawLight, DrawModel, Vertex};
+
+use crate::camera::Camera;
 
 const NUM_INSTANCES_PER_ROW: u32 = 10;
 
@@ -721,20 +724,20 @@ impl State {
             );
         }
 
-            let mut x = 0.0;
-            let mut y = 0.0;
-            let mut z = 0.0;
+            let mut yaw = self.camera.yaw.0;
+            let mut pitch = self.camera.pitch.0;
             let raw_input = self.egui_state.take_egui_input(&self.window);
             let mut full_output = self.egui_ctx.run_pass(raw_input, |ctx| {
                 egui::Window::new("Camera rotation").show(ctx, |ui| {
                     ui.add(
-                        egui::Slider::new(&mut x, -PI / 2.0..=PI / 2.0)
-                            .text("X (rad)"),
+                        egui::Slider::new(&mut yaw, -PI..=PI)
+                            .text("pitch (rad)"),
                     );
-                    ui.add(egui::Slider::new(&mut y, -PI..=PI).text("Y (rad)"));
-                    ui.add(egui::Slider::new(&mut z, -PI..=PI).text("Z (rad)"));
+                    ui.add(egui::Slider::new(&mut pitch, -PI..=PI).text("yaw (rad)"));
                 });
             });
+            self.camera.yaw = cgmath::Rad(yaw);
+            self.camera.pitch = cgmath::Rad(pitch);
 
             self.egui_state
                 .handle_platform_output(&self.window, full_output.platform_output);
